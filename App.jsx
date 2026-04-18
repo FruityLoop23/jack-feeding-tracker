@@ -1,14 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Baby, Droplets, BarChart3, Trash2, Moon, Pencil, Clock3 } from "lucide-react";
 
 // REPLACE THESE WITH YOUR VALUES
 const SUPABASE_URL = "https://wnddhjthqncqzlwnxuo.supabase.co";
@@ -18,6 +9,377 @@ const supabase =
   SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_PUBLISHABLE_KEY !== "YOUR_SUPABASE_PUBLISHABLE_KEY"
     ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
     : null;
+
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, rgba(20,184,166,0.05), #f1f5f9)",
+    padding: "16px",
+    fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    color: "#0f172a",
+  },
+  shell: {
+    maxWidth: "1120px",
+    margin: "0 auto",
+  },
+  topBar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "16px",
+    flexWrap: "wrap",
+    marginBottom: "24px",
+  },
+  title: {
+    fontSize: "32px",
+    fontWeight: 800,
+    margin: 0,
+    letterSpacing: "-0.03em",
+  },
+  subtitle: {
+    margin: "6px 0 0",
+    color: "#475569",
+    fontSize: "14px",
+  },
+  primaryButton: {
+    border: "none",
+    background: "#0d9488",
+    color: "white",
+    borderRadius: "16px",
+    padding: "14px 20px",
+    fontSize: "16px",
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow: "0 10px 25px rgba(13, 148, 136, 0.18)",
+  },
+  card: {
+    background: "white",
+    border: "1px solid #e2e8f0",
+    borderRadius: "24px",
+    boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
+  },
+  statGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "16px",
+    marginBottom: "16px",
+  },
+  twoColGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "16px",
+    marginBottom: "24px",
+  },
+  statInner: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+    padding: "24px",
+  },
+  iconWrap: {
+    width: "48px",
+    height: "48px",
+    minWidth: "48px",
+    borderRadius: "16px",
+    background: "#ecfeff",
+    color: "#0d9488",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "20px",
+    fontWeight: 700,
+  },
+  statTitle: {
+    fontSize: "14px",
+    color: "#64748b",
+    marginBottom: "4px",
+  },
+  statValue: {
+    fontSize: "18px",
+    fontWeight: 800,
+    lineHeight: 1.15,
+  },
+  statSub: {
+    fontSize: "14px",
+    color: "#64748b",
+    marginTop: "4px",
+  },
+  tabsWrap: {
+    display: "flex",
+    gap: "8px",
+    background: "#f1f5f9",
+    borderRadius: "16px",
+    padding: "6px",
+    marginBottom: "16px",
+  },
+  tab: {
+    flex: 1,
+    borderRadius: "12px",
+    border: "1px solid #99f6e4",
+    background: "white",
+    color: "#334155",
+    padding: "12px 16px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  tabActive: {
+    background: "#0d9488",
+    color: "white",
+    borderColor: "#0d9488",
+  },
+  dayCardHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "16px",
+    alignItems: "center",
+    flexWrap: "wrap",
+    marginBottom: "16px",
+  },
+  dayInfo: {
+    padding: "24px 24px 0",
+  },
+  contentPad: {
+    padding: "0 24px 24px",
+  },
+  pills: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, minmax(72px, 1fr))",
+    gap: "8px",
+  },
+  pill: {
+    background: "#ecfeff",
+    borderRadius: "14px",
+    padding: "10px 12px",
+    textAlign: "center",
+  },
+  pillLabel: {
+    fontSize: "11px",
+    color: "#64748b",
+    marginBottom: "4px",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  },
+  pillValue: {
+    fontWeight: 700,
+    color: "#134e4a",
+  },
+  feedCard: {
+    border: "1px solid #e2e8f0",
+    borderRadius: "18px",
+    padding: "16px",
+    marginBottom: "12px",
+    background: "#ffffff",
+  },
+  feedTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "12px",
+    flexWrap: "wrap",
+    marginBottom: "12px",
+  },
+  feedTime: {
+    fontSize: "22px",
+    fontWeight: 800,
+    lineHeight: 1.1,
+  },
+  feedTotal: {
+    fontSize: "28px",
+    fontWeight: 800,
+    lineHeight: 1.1,
+  },
+  muted: {
+    color: "#64748b",
+    fontSize: "14px",
+  },
+  feedDetails: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+    gap: "10px",
+    marginBottom: "12px",
+  },
+  detailBox: {
+    background: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: "14px",
+    padding: "10px 12px",
+  },
+  detailLabel: {
+    fontSize: "11px",
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+    marginBottom: "4px",
+  },
+  detailValue: {
+    fontSize: "15px",
+    fontWeight: 700,
+  },
+  actionRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px",
+    flexWrap: "wrap",
+    borderTop: "1px solid #e2e8f0",
+    paddingTop: "12px",
+  },
+  actionButtons: {
+    display: "flex",
+    gap: "8px",
+  },
+  ghostButton: {
+    border: "1px solid #dbeafe",
+    background: "white",
+    color: "#0f172a",
+    borderRadius: "14px",
+    padding: "10px 14px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  dangerButton: {
+    border: "1px solid #fecdd3",
+    background: "white",
+    color: "#be123c",
+    borderRadius: "14px",
+    padding: "10px 14px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  summaryGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "16px",
+  },
+  summaryInner: {
+    padding: "24px",
+  },
+  summaryValue: {
+    fontSize: "30px",
+    fontWeight: 800,
+    marginTop: "8px",
+  },
+  emptyState: {
+    textAlign: "center",
+    padding: "56px 24px",
+    color: "#64748b",
+  },
+  modalBackdrop: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(15, 23, 42, 0.45)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "16px",
+    zIndex: 50,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: "640px",
+    background: "white",
+    borderRadius: "24px",
+    border: "1px solid #e2e8f0",
+    boxShadow: "0 24px 48px rgba(15, 23, 42, 0.22)",
+    overflow: "hidden",
+  },
+  modalHeader: {
+    padding: "24px 24px 0",
+  },
+  modalTitle: {
+    fontSize: "24px",
+    fontWeight: 800,
+    margin: 0,
+  },
+  modalBody: {
+    padding: "24px",
+  },
+  progressRow: {
+    display: "flex",
+    gap: "8px",
+    marginBottom: "20px",
+  },
+  progressBar: {
+    height: "8px",
+    flex: 1,
+    borderRadius: "999px",
+    background: "#e2e8f0",
+  },
+  formGrid: {
+    display: "grid",
+    gap: "16px",
+  },
+  label: {
+    display: "block",
+    fontSize: "14px",
+    fontWeight: 700,
+    marginBottom: "6px",
+  },
+  input: {
+    width: "100%",
+    boxSizing: "border-box",
+    borderRadius: "16px",
+    border: "1px solid #cbd5e1",
+    background: "white",
+    padding: "14px 16px",
+    fontSize: "16px",
+    outline: "none",
+  },
+  select: {
+    width: "100%",
+    boxSizing: "border-box",
+    borderRadius: "16px",
+    border: "1px solid #cbd5e1",
+    background: "white",
+    padding: "14px 16px",
+    fontSize: "16px",
+    outline: "none",
+  },
+  textarea: {
+    width: "100%",
+    boxSizing: "border-box",
+    minHeight: "110px",
+    borderRadius: "16px",
+    border: "1px solid #cbd5e1",
+    background: "white",
+    padding: "14px 16px",
+    fontSize: "16px",
+    outline: "none",
+    resize: "vertical",
+  },
+  noteBox: {
+    background: "#ecfeff",
+    color: "#115e59",
+    borderRadius: "16px",
+    padding: "14px 16px",
+    fontSize: "14px",
+  },
+  modalFooter: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "12px",
+    padding: "0 24px 24px",
+    flexWrap: "wrap",
+  },
+  secondaryButton: {
+    border: "1px solid #cbd5e1",
+    background: "white",
+    color: "#0f172a",
+    borderRadius: "16px",
+    padding: "14px 18px",
+    fontSize: "16px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  errorCard: {
+    background: "#fffbeb",
+    border: "1px solid #fcd34d",
+    color: "#92400e",
+    borderRadius: "18px",
+    padding: "14px 16px",
+    marginBottom: "16px",
+    fontSize: "14px",
+  },
+};
 
 function formatDate(date) {
   return new Date(date).toLocaleDateString("en-IE", {
@@ -140,10 +502,54 @@ function addHours(date, hours) {
   return new Date(date.getTime() + hours * 60 * 60 * 1000);
 }
 
+function Card({ children, style }) {
+  return <div style={{ ...styles.card, ...style }}>{children}</div>;
+}
+
+function StatCard({ icon, title, value, sub }) {
+  return (
+    <Card>
+      <div style={styles.statInner}>
+        <div style={styles.iconWrap}>{icon}</div>
+        <div>
+          <div style={styles.statTitle}>{title}</div>
+          <div style={styles.statValue}>{value}</div>
+          <div style={styles.statSub}>{sub}</div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function SummaryCard({ title, value }) {
+  return (
+    <Card>
+      <div style={styles.summaryInner}>
+        <div style={styles.statTitle}>{title}</div>
+        <div style={styles.summaryValue}>{value}</div>
+      </div>
+    </Card>
+  );
+}
+
+function MiniPill({ label, value }) {
+  return (
+    <div style={styles.pill}>
+      <div style={styles.pillLabel}>{label}</div>
+      <div style={styles.pillValue}>{value}</div>
+    </div>
+  );
+}
+
+function Icon({ children }) {
+  return <span aria-hidden="true">{children}</span>;
+}
+
 export default function JackFeedingTracker() {
   const [entries, setEntries] = useState([]);
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
+  const [activeTab, setActiveTab] = useState("daily");
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -269,313 +675,240 @@ export default function JackFeedingTracker() {
   const nextDueDateTime = lastFeedDateTime ? addHours(lastFeedDateTime, 3) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50/40 to-slate-100 p-4 md:p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div style={styles.page}>
+      <div style={styles.shell}>
+        <div style={styles.topBar}>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Jack Feeding Tracker</h1>
-            <p className="mt-1 text-sm text-slate-600">Simple daily feed, nappy, and sleep logging.</p>
+            <h1 style={styles.title}>Jack Feeding Tracker</h1>
+            <p style={styles.subtitle}>Simple daily feed, nappy, and sleep logging.</p>
           </div>
-          <Button onClick={openNewFeed} className="rounded-2xl bg-teal-600 px-5 py-6 text-base text-white hover:bg-teal-700">
-            <Plus className="mr-2 h-4 w-4" />
-            New Feed
-          </Button>
+          <button onClick={openNewFeed} style={styles.primaryButton}>
+            + New Feed
+          </button>
         </div>
 
-        {errorMessage && (
-          <Card className="rounded-3xl border border-amber-200 bg-amber-50 shadow-sm">
-            <CardContent className="p-4 text-sm text-amber-800">{errorMessage}</CardContent>
-          </Card>
-        )}
+        {errorMessage ? <div style={styles.errorCard}>{errorMessage}</div> : null}
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatCard icon={<Baby className="h-5 w-5" />} title="Today's Total" value={`${today?.totalMl ?? 0} ml`} sub={`${today?.feeds.length ?? 0} feeds`} />
-          <StatCard icon={<Droplets className="h-5 w-5" />} title="Today's Nappies" value={`${today?.wetCount ?? 0} / ${today?.dirtyCount ?? 0}`} sub="wet / dirty" />
-          <StatCard icon={<BarChart3 className="h-5 w-5" />} title="Avg per Day" value={`${summary.avgMlPerDay.toFixed(0)} ml`} sub={`${summary.avgFeedsPerDay.toFixed(1)} feeds`} />
-          <StatCard icon={<Moon className="h-5 w-5" />} title="Tracked Days" value={`${summary.trackedDays}`} sub={`${summary.totalFeeds} total feeds`} />
+        <div style={styles.statGrid}>
+          <StatCard icon={<Icon>🍼</Icon>} title="Today's Total" value={`${today?.totalMl ?? 0} ml`} sub={`${today?.feeds.length ?? 0} feeds`} />
+          <StatCard icon={<Icon>💧</Icon>} title="Today's Nappies" value={`${today?.wetCount ?? 0} / ${today?.dirtyCount ?? 0}`} sub="wet / dirty" />
+          <StatCard icon={<Icon>📊</Icon>} title="Avg per Day" value={`${summary.avgMlPerDay.toFixed(0)} ml`} sub={`${summary.avgFeedsPerDay.toFixed(1)} feeds`} />
+          <StatCard icon={<Icon>🌙</Icon>} title="Tracked Days" value={`${summary.trackedDays}`} sub={`${summary.totalFeeds} total feeds`} />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div style={styles.twoColGrid}>
           <StatCard
-            icon={<Clock3 className="h-5 w-5" />}
+            icon={<Icon>🕒</Icon>}
             title="Last Feed"
             value={lastFeedToday ? lastFeedToday.time : "—"}
             sub={lastFeedToday ? `${lastFeedToday.totalMl} ml today` : "No feeds logged today"}
           />
           <StatCard
-            icon={<Clock3 className="h-5 w-5" />}
+            icon={<Icon>⏰</Icon>}
             title="Next Due Around"
             value={nextDueDateTime ? formatClockTime(nextDueDateTime) : "—"}
             sub={nextDueDateTime ? "Based on a 3-hour gap" : "Will show after first feed"}
           />
         </div>
 
-        <Tabs defaultValue="daily" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 rounded-2xl bg-slate-100 p-1">
-            <TabsTrigger value="daily" className="rounded-xl border border-teal-200 bg-white text-slate-700 data-[state=active]:border-teal-600 data-[state=active]:bg-teal-600 data-[state=active]:text-white">
-              Daily Log
-            </TabsTrigger>
-            <TabsTrigger value="summary" className="rounded-xl border border-teal-200 bg-white text-slate-700 data-[state=active]:border-teal-600 data-[state=active]:bg-teal-600 data-[state=active]:text-white">
-              Summary
-            </TabsTrigger>
-          </TabsList>
+        <div style={styles.tabsWrap}>
+          <button style={{ ...styles.tab, ...(activeTab === "daily" ? styles.tabActive : {}) }} onClick={() => setActiveTab("daily")}>
+            Daily Log
+          </button>
+          <button style={{ ...styles.tab, ...(activeTab === "summary" ? styles.tabActive : {}) }} onClick={() => setActiveTab("summary")}>
+            Summary
+          </button>
+        </div>
 
-          <TabsContent value="daily">
-            <div className="space-y-4">
-              {dailyGroups.length === 0 && (
-                <Card className="rounded-3xl border-dashed border-slate-200 bg-white shadow-sm">
-                  <CardContent className="py-16 text-center text-slate-500">
-                    No feeds logged yet. Start with <span className="font-semibold">New Feed</span>.
-                  </CardContent>
-                </Card>
-              )}
-
-              {dailyGroups.map((day) => (
-                <Card key={day.date} className="rounded-3xl border border-slate-100 bg-white shadow-sm">
-                  <CardHeader>
-                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        {activeTab === "daily" && (
+          <div>
+            {dailyGroups.length === 0 ? (
+              <Card>
+                <div style={styles.emptyState}>
+                  No feeds logged yet. Start with <strong>New Feed</strong>.
+                </div>
+              </Card>
+            ) : (
+              dailyGroups.map((day) => (
+                <Card key={day.date} style={{ marginBottom: "16px" }}>
+                  <div style={styles.dayInfo}>
+                    <div style={styles.dayCardHeader}>
                       <div>
-                        <CardTitle>{day.day}</CardTitle>
-                        <p className="text-sm text-slate-600">{formatDate(day.date)}</p>
+                        <div style={{ fontSize: "20px", fontWeight: 800 }}>{day.day}</div>
+                        <div style={styles.muted}>{formatDate(day.date)}</div>
                       </div>
-                      <div className="grid grid-cols-3 gap-2 text-sm">
+                      <div style={styles.pills}>
                         <MiniPill label="Total" value={`${day.totalMl} ml`} />
                         <MiniPill label="Wet" value={String(day.wetCount)} />
                         <MiniPill label="Dirty" value={String(day.dirtyCount)} />
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full text-sm">
-                        <thead>
-                          <tr className="border-b text-left text-slate-500">
-                            <th className="pb-2 pr-4">Time</th>
-                            <th className="pb-2 pr-4">Breast</th>
-                            <th className="pb-2 pr-4">Formula</th>
-                            <th className="pb-2 pr-4">Total</th>
-                            <th className="pb-2 pr-4">Wet</th>
-                            <th className="pb-2 pr-4">Dirty</th>
-                            <th className="pb-2 pr-4">Down Time</th>
-                            <th className="pb-2 pr-4">Notes</th>
-                            <th className="pb-2 pr-4"></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {day.feeds.map((feed) => (
-                            <tr key={feed.id} className="border-b last:border-0">
-                              <td className="py-3 pr-4">{feed.time}</td>
-                              <td className="py-3 pr-4">{feed.breastMl || 0} ml</td>
-                              <td className="py-3 pr-4">{feed.formulaMl || 0} ml</td>
-                              <td className="py-3 pr-4 font-medium">{feed.totalMl} ml</td>
-                              <td className="py-3 pr-4">{feed.wet}</td>
-                              <td className="py-3 pr-4">{feed.dirty}</td>
-                              <td className="py-3 pr-4">{feed.downTime || "—"}</td>
-                              <td className="max-w-[220px] py-3 pr-4 truncate" title={feed.notes || ""}>
-                                {feed.notes || "—"}
-                              </td>
-                              <td className="py-3 pr-0 text-right">
-                                <div className="flex items-center justify-end gap-1">
-                                  <Button variant="ghost" size="icon" className="h-11 w-11 rounded-2xl hover:bg-teal-50" onClick={() => openEditFeed(feed)}>
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon" className="h-11 w-11 rounded-2xl hover:bg-rose-50" onClick={() => deleteEntry(feed.id)}>
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </CardContent>
+                  </div>
+                  <div style={styles.contentPad}>
+                    {day.feeds.map((feed) => (
+                      <div key={feed.id} style={styles.feedCard}>
+                        <div style={styles.feedTop}>
+                          <div>
+                            <div style={styles.feedTime}>{feed.time}</div>
+                            <div style={styles.muted}>Feed logged</div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={styles.feedTotal}>{feed.totalMl} ml</div>
+                            <div style={styles.muted}>total</div>
+                          </div>
+                        </div>
+
+                        <div style={styles.feedDetails}>
+                          <div style={styles.detailBox}>
+                            <div style={styles.detailLabel}>Breast</div>
+                            <div style={styles.detailValue}>{feed.breastMl || 0} ml</div>
+                          </div>
+                          <div style={styles.detailBox}>
+                            <div style={styles.detailLabel}>Formula</div>
+                            <div style={styles.detailValue}>{feed.formulaMl || 0} ml</div>
+                          </div>
+                          <div style={styles.detailBox}>
+                            <div style={styles.detailLabel}>Wet</div>
+                            <div style={styles.detailValue}>{feed.wet}</div>
+                          </div>
+                          <div style={styles.detailBox}>
+                            <div style={styles.detailLabel}>Dirty</div>
+                            <div style={styles.detailValue}>{feed.dirty}</div>
+                          </div>
+                          <div style={styles.detailBox}>
+                            <div style={styles.detailLabel}>Down Time</div>
+                            <div style={styles.detailValue}>{feed.downTime || "—"}</div>
+                          </div>
+                          <div style={styles.detailBox}>
+                            <div style={styles.detailLabel}>Notes</div>
+                            <div style={styles.detailValue}>{feed.notes || "—"}</div>
+                          </div>
+                        </div>
+
+                        <div style={styles.actionRow}>
+                          <div style={styles.muted}>Saved in shared tracker</div>
+                          <div style={styles.actionButtons}>
+                            <button style={styles.ghostButton} onClick={() => openEditFeed(feed)}>
+                              Edit
+                            </button>
+                            <button style={styles.dangerButton} onClick={() => deleteEntry(feed.id)}>
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </Card>
-              ))}
-            </div>
-          </TabsContent>
+              ))
+            )}
+          </div>
+        )}
 
-          <TabsContent value="summary">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <SummaryCard title="Average ml per day" value={`${summary.avgMlPerDay.toFixed(0)} ml`} />
-              <SummaryCard title="Average feeds per day" value={summary.avgFeedsPerDay.toFixed(1)} />
-              <SummaryCard title="Average wet nappies" value={summary.avgWetPerDay.toFixed(1)} />
-              <SummaryCard title="Average dirty nappies" value={summary.avgDirtyPerDay.toFixed(1)} />
-            </div>
-          </TabsContent>
-        </Tabs>
+        {activeTab === "summary" && (
+          <div style={styles.summaryGrid}>
+            <SummaryCard title="Average ml per day" value={`${summary.avgMlPerDay.toFixed(0)} ml`} />
+            <SummaryCard title="Average feeds per day" value={summary.avgFeedsPerDay.toFixed(1)} />
+            <SummaryCard title="Average wet nappies" value={summary.avgWetPerDay.toFixed(1)} />
+            <SummaryCard title="Average dirty nappies" value={summary.avgDirtyPerDay.toFixed(1)} />
+          </div>
+        )}
 
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="rounded-3xl sm:max-w-xl">
-            <DialogHeader>
-              <DialogTitle>{editingId ? "Edit Feed" : "New Feed"}</DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-6">
-              <div className="flex items-center gap-2">
-                {[1, 2, 3].map((n) => (
-                  <div key={n} className={`h-2 flex-1 rounded-full ${step >= n ? "bg-teal-600" : "bg-slate-200"}`} />
-                ))}
+        {open && (
+          <div style={styles.modalBackdrop} onClick={() => setOpen(false)}>
+            <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h2 style={styles.modalTitle}>{editingId ? "Edit Feed" : "New Feed"}</h2>
               </div>
 
-              <AnimatePresence mode="wait">
+              <div style={styles.modalBody}>
+                <div style={styles.progressRow}>
+                  {[1, 2, 3].map((n) => (
+                    <div
+                      key={n}
+                      style={{
+                        ...styles.progressBar,
+                        background: step >= n ? "#0d9488" : "#e2e8f0",
+                      }}
+                    />
+                  ))}
+                </div>
+
                 {step === 1 && (
-                  <motion.div
-                    key="step1"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="grid gap-4"
-                  >
-                    <div className="grid gap-2">
-                      <Label>Date</Label>
-                      <Input className="h-12 rounded-2xl" type="date" value={form.date} onChange={(e) => updateField("date", e.target.value)} />
+                  <div style={styles.formGrid}>
+                    <div>
+                      <label style={styles.label}>Date</label>
+                      <input style={styles.input} type="date" value={form.date} onChange={(e) => updateField("date", e.target.value)} />
                     </div>
-                    <div className="grid gap-2">
-                      <Label>Time</Label>
-                      <Input className="h-12 rounded-2xl" type="time" value={form.time} onChange={(e) => updateField("time", e.target.value)} />
+                    <div>
+                      <label style={styles.label}>Time</label>
+                      <input style={styles.input} type="time" value={form.time} onChange={(e) => updateField("time", e.target.value)} />
                     </div>
-                  </motion.div>
+                  </div>
                 )}
 
                 {step === 2 && (
-                  <motion.div
-                    key="step2"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="grid gap-4"
-                  >
-                    <div className="grid gap-2">
-                      <Label>Breast (ml)</Label>
-                      <Input
-                        className="h-12 rounded-2xl"
-                        type="number"
-                        inputMode="numeric"
-                        placeholder="e.g. 50"
-                        value={form.breastMl}
-                        onChange={(e) => updateField("breastMl", e.target.value)}
-                      />
+                  <div style={styles.formGrid}>
+                    <div>
+                      <label style={styles.label}>Breast (ml)</label>
+                      <input style={styles.input} type="number" inputMode="numeric" placeholder="e.g. 50" value={form.breastMl} onChange={(e) => updateField("breastMl", e.target.value)} />
                     </div>
-                    <div className="grid gap-2">
-                      <Label>Formula (ml)</Label>
-                      <Input
-                        className="h-12 rounded-2xl"
-                        type="number"
-                        inputMode="numeric"
-                        placeholder="e.g. 30"
-                        value={form.formulaMl}
-                        onChange={(e) => updateField("formulaMl", e.target.value)}
-                      />
+                    <div>
+                      <label style={styles.label}>Formula (ml)</label>
+                      <input style={styles.input} type="number" inputMode="numeric" placeholder="e.g. 30" value={form.formulaMl} onChange={(e) => updateField("formulaMl", e.target.value)} />
                     </div>
-                    <div className="rounded-2xl bg-teal-50 p-4 text-sm text-teal-700">
-                      Total feed: <span className="font-semibold">{totalMlPreview} ml</span>
+                    <div style={styles.noteBox}>
+                      Total feed: <strong>{totalMlPreview} ml</strong>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
 
                 {step === 3 && (
-                  <motion.div
-                    key="step3"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="grid gap-4"
-                  >
-                    <div className="grid gap-2">
-                      <Label>Wet nappy</Label>
-                      <Select value={form.wet} onValueChange={(value) => updateField("wet", value)}>
-                        <SelectTrigger className="h-12 rounded-2xl">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Yes">Yes</SelectItem>
-                          <SelectItem value="No">No</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  <div style={styles.formGrid}>
+                    <div>
+                      <label style={styles.label}>Wet nappy</label>
+                      <select style={styles.select} value={form.wet} onChange={(e) => updateField("wet", e.target.value)}>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
                     </div>
-                    <div className="grid gap-2">
-                      <Label>Dirty nappy</Label>
-                      <Select value={form.dirty} onValueChange={(value) => updateField("dirty", value)}>
-                        <SelectTrigger className="h-12 rounded-2xl">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Yes">Yes</SelectItem>
-                          <SelectItem value="No">No</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div>
+                      <label style={styles.label}>Dirty nappy</label>
+                      <select style={styles.select} value={form.dirty} onChange={(e) => updateField("dirty", e.target.value)}>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
                     </div>
-                    <div className="grid gap-2">
-                      <Label>Down Time</Label>
-                      <Input className="h-12 rounded-2xl" type="time" value={form.downTime} onChange={(e) => updateField("downTime", e.target.value)} />
+                    <div>
+                      <label style={styles.label}>Down Time</label>
+                      <input style={styles.input} type="time" value={form.downTime} onChange={(e) => updateField("downTime", e.target.value)} />
                     </div>
-                    <div className="grid gap-2">
-                      <Label>Notes</Label>
-                      <textarea
-                        value={form.notes}
-                        onChange={(e) => updateField("notes", e.target.value)}
-                        placeholder="Anything worth noting about this feed..."
-                        className="min-h-24 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-teal-500"
-                      />
+                    <div>
+                      <label style={styles.label}>Notes</label>
+                      <textarea style={styles.textarea} value={form.notes} onChange={(e) => updateField("notes", e.target.value)} placeholder="Anything worth noting about this feed..." />
                     </div>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
+              </div>
+
+              <div style={styles.modalFooter}>
+                <button style={styles.secondaryButton} onClick={() => (step === 1 ? setOpen(false) : setStep(step - 1))}>
+                  {step === 1 ? "Cancel" : "Back"}
+                </button>
+                {step < 3 ? (
+                  <button style={styles.primaryButton} onClick={() => setStep(step + 1)}>
+                    Next
+                  </button>
+                ) : (
+                  <button style={styles.primaryButton} onClick={saveEntry} disabled={isSaving}>
+                    {isSaving ? "Saving..." : editingId ? "Save Changes" : "Save Feed"}
+                  </button>
+                )}
+              </div>
             </div>
-
-            <DialogFooter className="flex-row justify-between gap-2 sm:justify-between">
-              <Button variant="outline" className="h-12 rounded-2xl px-5" onClick={() => (step === 1 ? setOpen(false) : setStep(step - 1))}>
-                {step === 1 ? "Cancel" : "Back"}
-              </Button>
-              {step < 3 ? (
-                <Button className="h-12 rounded-2xl bg-teal-600 px-5 text-white hover:bg-teal-700" onClick={() => setStep(step + 1)}>
-                  Next
-                </Button>
-              ) : (
-                <Button className="h-12 rounded-2xl bg-teal-600 px-5 text-white hover:bg-teal-700" onClick={saveEntry} disabled={isSaving}>
-                  {isSaving ? "Saving..." : editingId ? "Save Changes" : "Save Feed"}
-                </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          </div>
+        )}
       </div>
-    </div>
-  );
-}
-
-function StatCard({ icon, title, value, sub }) {
-  return (
-    <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm">
-      <CardContent className="flex items-center gap-4 p-6">
-        <div className="rounded-2xl bg-teal-50 p-3 text-teal-600">{icon}</div>
-        <div>
-          <p className="text-sm text-slate-500">{title}</p>
-          <p className="text-2xl font-bold leading-tight">{value}</p>
-          <p className="text-sm text-slate-500">{sub}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function SummaryCard({ title, value }) {
-  return (
-    <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm">
-      <CardContent className="p-6">
-        <p className="text-sm text-slate-500">{title}</p>
-        <p className="mt-2 text-3xl font-bold">{value}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function MiniPill({ label, value }) {
-  return (
-    <div className="rounded-2xl bg-teal-50 px-3 py-2 text-center text-teal-700">
-      <div className="text-xs text-slate-500">{label}</div>
-      <div className="font-semibold">{value}</div>
     </div>
   );
 }
