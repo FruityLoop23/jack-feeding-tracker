@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// REPLACE THESE WITH YOUR VALUES
 const SUPABASE_URL = "https://wnddhjthqncqzlvnwxuo.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_w_LFYA3vl63sPT5jhHwsmA_iUZtW0w2";
+
+const JACK_DATE_OF_BIRTH = "2026-03-02";
 
 const supabase =
   SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_PUBLISHABLE_KEY !== "YOUR_SUPABASE_PUBLISHABLE_KEY"
@@ -15,7 +16,8 @@ const styles = {
     minHeight: "100vh",
     background: "linear-gradient(135deg, rgba(20,184,166,0.05), #f1f5f9)",
     padding: "16px",
-    fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontFamily:
+      "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     color: "#0f172a",
   },
   shell: {
@@ -111,6 +113,7 @@ const styles = {
     borderRadius: "16px",
     padding: "6px",
     marginBottom: "16px",
+    flexWrap: "wrap",
   },
   tab: {
     flex: 1,
@@ -379,6 +382,53 @@ const styles = {
     marginBottom: "16px",
     fontSize: "14px",
   },
+  weightHeroGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "16px",
+    marginBottom: "16px",
+  },
+  weightCardInner: {
+    padding: "24px",
+  },
+  weightBigNumber: {
+    fontSize: "34px",
+    fontWeight: 800,
+    lineHeight: 1.05,
+    marginTop: "8px",
+  },
+  weightList: {
+    display: "grid",
+    gap: "12px",
+  },
+  weightEntry: {
+    border: "1px solid #e2e8f0",
+    borderRadius: "18px",
+    padding: "16px",
+    background: "white",
+  },
+  weightEntryTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px",
+    flexWrap: "wrap",
+  },
+  weightValue: {
+    fontSize: "28px",
+    fontWeight: 800,
+    lineHeight: 1.1,
+  },
+  softButton: {
+    border: "1px solid #99f6e4",
+    background: "#ecfeff",
+    color: "#115e59",
+    borderRadius: "16px",
+    padding: "14px 18px",
+    fontSize: "16px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
 };
 
 function formatDate(date) {
@@ -387,6 +437,31 @@ function formatDate(date) {
     month: "numeric",
     year: "2-digit",
   });
+}
+
+function formatDateTime(date) {
+  return {
+    displayDate: new Date(date).toLocaleDateString("en-IE"),
+    displayTime: new Date(date).toLocaleTimeString("en-IE", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+}
+
+function formatAgeAtDate(date, dateOfBirth) {
+  const birth = new Date(`${dateOfBirth}T00:00:00`);
+  const current = new Date(date);
+  const diffMs = current.getTime() - birth.getTime();
+  if (Number.isNaN(diffMs) || diffMs < 0) return "Age unavailable";
+
+  const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const weeks = Math.floor(totalDays / 7);
+  const days = totalDays % 7;
+
+  const weekLabel = weeks === 1 ? "week" : "weeks";
+  const dayLabel = days === 1 ? "day" : "days";
+  return `${weeks} ${weekLabel}, ${days} ${dayLabel}`;
 }
 
 function getTodayKey() {
@@ -432,6 +507,20 @@ function mapDbEntryToUi(entry) {
   };
 }
 
+function mapWeightDbToUi(entry) {
+  const createdAt = entry.created_at ?? new Date().toISOString();
+  const { displayDate, displayTime } = formatDateTime(createdAt);
+  return {
+    id: entry.id,
+    createdAt,
+    displayDate,
+    displayTime,
+    ageText: formatAgeAtDate(createdAt, JACK_DATE_OF_BIRTH),
+    weightKg: Number(entry.weight_kg ?? 0),
+    notes: entry.notes ?? "—",
+  };
+}
+
 function buildDailyGroups(entries) {
   const groups = {};
 
@@ -456,7 +545,7 @@ function buildDailyGroups(entries) {
   return Object.values(groups)
     .map((g) => ({
       ...g,
-      feeds: g.feeds.sort((a, b) => a.time.localeCompare(b.time)),
+      feeds: g.feeds.sort((a, b) => b.time.localeCompare(a.time)),
     }))
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
@@ -470,6 +559,14 @@ const initialForm = {
   dirty: "No",
   downTime: "",
   notes: "",
+};
+
+const initialWeightForm = {
+  weightKg: "",
+  notes: "",
+  createdAt: "",
+  displayDate: "",
+  displayTime: "",
 };
 
 function toFormValues(entry) {
@@ -547,22 +644,31 @@ function Icon({ children }) {
 
 export default function JackFeedingTracker() {
   const [entries, setEntries] = useState([]);
+  const [weightEntries, setWeightEntries] = useState([]);
   const [open, setOpen] = useState(false);
+  const [weightOpen, setWeightOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [activeTab, setActiveTab] = useState("daily");
   const [form, setForm] = useState(initialForm);
+  const [weightForm, setWeightForm] = useState(initialWeightForm);
   const [editingId, setEditingId] = useState(null);
+  const [editingWeightId, setEditingWeightId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     fetchFeeds();
+    fetchWeights();
   }, []);
 
   async function fetchFeeds() {
     if (!supabase) return;
 
-    const { data, error } = await supabase.from("feeds").select("*").order("date", { ascending: false }).order("time", { ascending: false });
+    const { data, error } = await supabase
+      .from("feeds")
+      .select("*")
+      .order("date", { ascending: false })
+      .order("time", { ascending: false });
 
     if (error) {
       setErrorMessage(error.message);
@@ -570,6 +676,27 @@ export default function JackFeedingTracker() {
     }
 
     setEntries((data ?? []).map(mapDbEntryToUi));
+    setErrorMessage("");
+  }
+
+  async function fetchWeights() {
+    if (!supabase) return;
+
+    const { data, error } = await supabase
+      .from("weights")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      if (error.code === "42P01") {
+        setErrorMessage("Weight logger is not active yet. Create the weights table in Supabase to enable it.");
+        return;
+      }
+      setErrorMessage(error.message);
+      return;
+    }
+
+    setWeightEntries((data ?? []).map(mapWeightDbToUi));
     setErrorMessage("");
   }
 
@@ -595,8 +722,12 @@ export default function JackFeedingTracker() {
   }, [dailyGroups, entries.length]);
 
   const totalMlPreview = toNumber(form.breastMl) + toNumber(form.formulaMl);
+  const latestWeight = weightEntries[0] ?? null;
+  const previousWeight = weightEntries[1] ?? null;
+  const weightChange = latestWeight && previousWeight ? (latestWeight.weightKg - previousWeight.weightKg).toFixed(2) : null;
 
   function openNewFeed() {
+    setWeightOpen(false);
     setEditingId(null);
     setForm({ ...initialForm, date: getTodayKey(), time: timeNow() });
     setStep(1);
@@ -605,10 +736,40 @@ export default function JackFeedingTracker() {
   }
 
   function openEditFeed(entry) {
+    setWeightOpen(false);
     setEditingId(entry.id);
     setForm(toFormValues(entry));
     setStep(1);
     setOpen(true);
+    setErrorMessage("");
+  }
+
+  function openWeightModal() {
+    const nowIso = new Date().toISOString();
+    const { displayDate, displayTime } = formatDateTime(nowIso);
+    setOpen(false);
+    setEditingWeightId(null);
+    setWeightForm({
+      weightKg: "",
+      notes: "",
+      createdAt: nowIso,
+      displayDate,
+      displayTime,
+    });
+    setWeightOpen(true);
+    setErrorMessage("");
+  }
+
+  function openEditWeight(entry) {
+    setEditingWeightId(entry.id);
+    setWeightForm({
+      weightKg: String(entry.weightKg ?? ""),
+      notes: entry.notes === "—" ? "" : entry.notes,
+      createdAt: entry.createdAt,
+      displayDate: entry.displayDate,
+      displayTime: entry.displayTime,
+    });
+    setWeightOpen(true);
     setErrorMessage("");
   }
 
@@ -652,6 +813,41 @@ export default function JackFeedingTracker() {
     setErrorMessage("");
   }
 
+  async function saveWeight() {
+    if (!supabase) {
+      setErrorMessage("Add your Supabase URL and publishable key at the top of the file first.");
+      return;
+    }
+
+    if (!weightForm.weightKg) return;
+
+    setIsSaving(true);
+
+    const preparedWeight = {
+      weight_kg: Number(weightForm.weightKg),
+      notes: weightForm.notes || null,
+      created_at: weightForm.createdAt,
+    };
+
+    const query = editingWeightId
+      ? supabase.from("weights").update({ weight_kg: preparedWeight.weight_kg, notes: preparedWeight.notes }).eq("id", editingWeightId)
+      : supabase.from("weights").insert([preparedWeight]);
+
+    const { error } = await query;
+
+    if (error) {
+      setErrorMessage(error.message);
+      setIsSaving(false);
+      return;
+    }
+
+    await fetchWeights();
+    setWeightOpen(false);
+    setEditingWeightId(null);
+    setIsSaving(false);
+    setErrorMessage("");
+  }
+
   async function deleteEntry(id) {
     if (!supabase) {
       setErrorMessage("Add your Supabase URL and publishable key at the top of the file first.");
@@ -666,11 +862,25 @@ export default function JackFeedingTracker() {
     await fetchFeeds();
   }
 
+  async function deleteWeight(id) {
+    if (!supabase) {
+      setErrorMessage("Add your Supabase URL and publishable key at the top of the file first.");
+      return;
+    }
+
+    const { error } = await supabase.from("weights").delete().eq("id", id);
+    if (error) {
+      setErrorMessage(error.message);
+      return;
+    }
+    await fetchWeights();
+  }
+
   function updateField(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  const lastFeedToday = today?.feeds?.length ? today.feeds[today.feeds.length - 1] : null;
+  const lastFeedToday = today?.feeds?.length ? today.feeds[0] : null;
   const lastFeedDateTime = lastFeedToday ? parseDateTime(lastFeedToday.date, lastFeedToday.time) : null;
   const nextDueDateTime = lastFeedDateTime ? addHours(lastFeedDateTime, 3) : null;
 
@@ -717,6 +927,9 @@ export default function JackFeedingTracker() {
           </button>
           <button style={{ ...styles.tab, ...(activeTab === "summary" ? styles.tabActive : {}) }} onClick={() => setActiveTab("summary")}>
             Summary
+          </button>
+          <button style={{ ...styles.tab, ...(activeTab === "weight" ? styles.tabActive : {}) }} onClick={() => setActiveTab("weight")}>
+            Weight
           </button>
         </div>
 
@@ -811,6 +1024,131 @@ export default function JackFeedingTracker() {
             <SummaryCard title="Average feeds per day" value={summary.avgFeedsPerDay.toFixed(1)} />
             <SummaryCard title="Average wet nappies" value={summary.avgWetPerDay.toFixed(1)} />
             <SummaryCard title="Average dirty nappies" value={summary.avgDirtyPerDay.toFixed(1)} />
+          </div>
+        )}
+
+        {activeTab === "weight" && (
+          <div>
+            <div style={{ ...styles.topBar, marginBottom: "16px" }}>
+              <div>
+                <div style={{ fontSize: "20px", fontWeight: 800 }}>Weight Tracker</div>
+                <div style={styles.muted}>A separate place to log Jack’s weight every few days.</div>
+              </div>
+              <button style={styles.softButton} onClick={openWeightModal}>
+                + Log Weight
+              </button>
+            </div>
+
+            <div style={styles.weightHeroGrid}>
+              <Card>
+                <div style={styles.weightCardInner}>
+                  <div style={styles.statTitle}>Latest Weight</div>
+                  <div style={styles.weightBigNumber}>{latestWeight ? `${latestWeight.weightKg.toFixed(2)} kg` : "—"}</div>
+                  <div style={styles.statSub}>{latestWeight ? `${latestWeight.displayDate} · ${latestWeight.ageText}` : "No weights logged yet"}</div>
+                </div>
+              </Card>
+
+              <Card>
+                <div style={styles.weightCardInner}>
+                  <div style={styles.statTitle}>Change Since Last</div>
+                  <div style={styles.weightBigNumber}>{weightChange ? `${weightChange.startsWith("-") ? "" : "+"}${weightChange} kg` : "—"}</div>
+                  <div style={styles.statSub}>{previousWeight ? `vs ${previousWeight.displayDate}` : "No previous weight"}</div>
+                </div>
+              </Card>
+
+              <Card>
+                <div style={styles.weightCardInner}>
+                  <div style={styles.statTitle}>Recent Trend</div>
+                  <div style={styles.weightBigNumber}>{weightChange ? (Number(weightChange) >= 0 ? "↑" : "↓") : "—"}</div>
+                  <div style={styles.statSub}>{weightChange ? "Compared with previous weigh-in" : "Trend appears after 2 entries"}</div>
+                </div>
+              </Card>
+            </div>
+
+            <Card>
+              <div style={styles.dayInfo}>
+                <div style={{ fontSize: "20px", fontWeight: 800 }}>Recent Weigh-Ins</div>
+                <div style={styles.muted}>This now uses real saved weight data.</div>
+              </div>
+              <div style={styles.contentPad}>
+                {weightEntries.length === 0 ? (
+                  <div style={styles.emptyState}>No weights logged yet. Start with <strong>Log Weight</strong>.</div>
+                ) : (
+                  <div style={styles.weightList}>
+                    {weightEntries.map((entry) => (
+                      <div key={entry.id} style={styles.weightEntry}>
+                        <div style={styles.weightEntryTop}>
+                          <div>
+                            <div style={styles.weightValue}>{entry.weightKg.toFixed(2)} kg</div>
+                            <div style={styles.muted}>
+                              {entry.displayDate} · {entry.displayTime}
+                            </div>
+                            <div style={styles.muted}>{entry.ageText}</div>
+                          </div>
+                          <div style={styles.actionButtons}>
+                            <button style={styles.ghostButton} onClick={() => openEditWeight(entry)}>
+                              Edit
+                            </button>
+                            <button style={styles.dangerButton} onClick={() => deleteWeight(entry.id)}>
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                        <div style={{ marginTop: "10px", ...styles.muted }}>{entry.notes}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {weightOpen && (
+          <div style={styles.modalBackdrop} onClick={() => setWeightOpen(false)}>
+            <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h2 style={styles.modalTitle}>{editingWeightId ? "Edit Weight" : "Log Weight"}</h2>
+              </div>
+
+              <div style={styles.modalBody}>
+                <div style={styles.formGrid}>
+                  <div>
+                    <label style={styles.label}>Weight (kg)</label>
+                    <input
+                      style={styles.input}
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      placeholder="e.g. 4.82"
+                      value={weightForm.weightKg}
+                      onChange={(e) => setWeightForm((prev) => ({ ...prev, weightKg: e.target.value }))}
+                    />
+                  </div>
+                  <div style={styles.noteBox}>
+                    Automatically stamped: <strong>{weightForm.displayDate || "—"}</strong> at <strong>{weightForm.displayTime || "—"}</strong>
+                  </div>
+                  <div>
+                    <label style={styles.label}>Notes</label>
+                    <textarea
+                      style={styles.textarea}
+                      value={weightForm.notes}
+                      onChange={(e) => setWeightForm((prev) => ({ ...prev, notes: e.target.value }))}
+                      placeholder="Optional note about this weigh-in..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div style={styles.modalFooter}>
+                <button style={styles.secondaryButton} onClick={() => setWeightOpen(false)}>
+                  Cancel
+                </button>
+                <button style={styles.primaryButton} onClick={saveWeight} disabled={isSaving}>
+                  {isSaving ? "Saving..." : editingWeightId ? "Save Changes" : "Save Weight"}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
